@@ -1,31 +1,84 @@
-# EventHub Workspace
+<div align="center">
 
-Integrated full-stack project for Web Programming 2026.
+# EventHub
 
-## Project Layout
+### A full-stack event discovery and registration platform
+
+Browse events, manage participant records, track registrations, and maintain schedules from one responsive workspace.
+
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Open_EventHub-2ea44f?style=for-the-badge)](https://sorooshaghaei.github.io/web-programming-project/)
+[![Sponsor](https://img.shields.io/badge/Sponsor-Support_the_project-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white)](https://github.com/sponsors/sorooshaghaei)
+
+[![React](https://img.shields.io/badge/React-19-20232a?logo=react)](frontend/)
+[![Vite](https://img.shields.io/badge/Vite-7-646cff?logo=vite&logoColor=white)](frontend/)
+[![Django](https://img.shields.io/badge/Django-5.2-092e20?logo=django)](backend/)
+[![Express](https://img.shields.io/badge/Express-4-000000?logo=express)](node/)
+[![GitHub Pages](https://img.shields.io/badge/Demo-GitHub_Pages-222222?logo=github)](https://sorooshaghaei.github.io/web-programming-project/)
+
+</div>
+
+---
+
+## Try it now
+
+The public GitHub Pages build opens directly into a **read-only demonstration workspace** with realistic sample data. It requires no account and no backend server.
+
+### [Open the live EventHub demo →](https://sorooshaghaei.github.io/web-programming-project/)
+
+The demo lets visitors inspect the dashboard, event directory, event details, participant records, responsive navigation, filtering, statuses, and light/dark interface. Editing is intentionally disabled because GitHub Pages hosts static files only.
+
+## What EventHub does
+
+- Presents upcoming events with searchable and filterable views.
+- Classifies events as **Open**, **Soon**, **Today**, or **Full**.
+- Maintains a reusable participant directory without duplicate profiles.
+- Connects participants and events through registration records.
+- Prevents duplicate registration for the same participant and event.
+- Supports confirmed, pending, and cancelled registration states.
+- Provides JWT authentication and role-based administration in the full-stack version.
+- Offers responsive layouts and persistent light/dark themes.
+
+## Product views
+
+| Area | Purpose |
+| --- | --- |
+| Dashboard | At-a-glance event, participant, capacity, and registration metrics |
+| Events | Search, filter, inspect, create, edit, and remove event schedules |
+| Event details | Review capacity, schedule information, and linked registrations |
+| Participants | Search and maintain participant records across multiple events |
+| Authentication | Registration, login, token refresh, and protected application routes |
+
+## Architecture
+
+```mermaid
+flowchart LR
+    Browser[Browser] --> Frontend[React 19 + Vite]
+    Frontend --> API[Shared REST API contract]
+    API --> Django[Django REST Framework]
+    API --> Express[Node.js + Express]
+    Django --> DB1[(SQLite)]
+    Express --> DB2[(SQLite)]
+
+    Pages[GitHub Pages demo] --> DemoData[Local read-only sample data]
+    DemoData --> Frontend
+```
+
+The repository contains two independent backend implementations exposing the same core event-management concepts. This makes the project useful both as a working application and as a comparison of backend approaches.
+
+## Repository structure
 
 ```text
 web-programming-project/
-  frontend/    React frontend workspace
-  backend/     Django backend workspace
-  node/        Node.js + Express comparative backend workspace
-  report/      LaTeX report workspace
+├── frontend/   React 19 and Vite user interface
+├── backend/    Django REST Framework API
+├── node/       Node.js and Express comparative API
+├── report/     LaTeX academic report workspace
+└── .github/    GitHub Pages deployment and funding configuration
 ```
 
-## Working Split
+## Run locally
 
-- Frontend work goes in `frontend/`
-- Django backend work goes in `backend/`
-- Node.js / Express comparative work goes in `node/`
-- Report writing goes in `report/`
-
-## Branches
-
-- `main`: integrated branch containing the current project structure
-- `soroosh_branch`: frontend-oriented branch
-- `backend`: backend-oriented branch
-
-## Frontend Quick Start
+### 1. Frontend
 
 ```bash
 cd frontend
@@ -33,135 +86,95 @@ npm install
 npm run dev
 ```
 
-## Backend Quick Start
+The frontend uses `http://localhost:8000/api` by default. To connect another API:
 
-Both backends expose the same REST API (`/api/events`, `/api/participants`) and can run at the same time on different ports.
+```bash
+VITE_API_BASE_URL=http://localhost:3001/api npm run dev
+```
 
-### Django (port 8000)
+### 2. Django API
+
+From the repository root:
 
 ```bash
 python3 -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
+source .venv/bin/activate
 pip install -r requirements.txt
 cd backend
 python manage.py migrate
 python manage.py runserver
 ```
 
-API available at `http://localhost:8000/api/`
+The Django API is available at `http://localhost:8000/api/`.
 
-### Node.js / Express (port 3001)
-
-Use Node.js 22 for this backend because `better-sqlite3` is a native dependency.
-
-If Node 22 is not installed yet on macOS with Homebrew:
+Create an administrator account with:
 
 ```bash
-brew install node@22
-export PATH="/opt/homebrew/opt/node@22/bin:$PATH"
-node -v
+python manage.py createsuperuser
 ```
 
-The version should be `v22.x.x`.
+### 3. Express API
+
+The comparative Express backend requires Node.js 22.
 
 ```bash
 cd node
-export PATH="/opt/homebrew/opt/node@22/bin:$PATH"  # macOS Homebrew Node 22
-rm -rf node_modules package-lock.json
 npm install
 npm run dev
 ```
 
-API available at `http://localhost:3001/api/`
+The Express API is available at `http://localhost:3001/api/`.
 
-### Running both at once
+## Build and deployment
 
-Open two terminals and run each quick start above in its own terminal. Both servers are independent and use separate SQLite databases (`backend/db.sqlite3` and `node/db.sqlite3`).
-
-## Public Deployment
-
-This repository is prepared for the following demo deployment shape:
-
-- `frontend/` -> Vercel
-- `backend/` -> Railway
-- database -> SQLite on a Railway mounted volume at `/data/db.sqlite3`
-
-### 1. Create the Railway backend
-
-1. Create a new Railway project from this GitHub repository.
-2. Add a volume and mount it at `/data`.
-3. Set the service build command:
+Build the frontend locally:
 
 ```bash
-python backend/manage.py collectstatic --noinput
+cd frontend
+npm ci
+npm run build
+npm run preview
 ```
 
-4. Set the service start command:
+Every relevant push to `main` triggers the GitHub Actions workflow in `.github/workflows/deploy-pages.yml`. The workflow builds the read-only demo and publishes `frontend/dist` to GitHub Pages.
 
-```bash
-python backend/manage.py migrate && gunicorn backend.wsgi:application --chdir backend --bind 0.0.0.0:$PORT
+For a public **full-stack** installation, deploy the React frontend and one backend implementation separately, then set `VITE_API_BASE_URL` to the public API URL. The Django backend includes Gunicorn, WhiteNoise, CORS configuration, JWT authentication, and an optional persistent SQLite path for hosted environments.
+
+## API domains
+
+The full-stack application works with these primary resources:
+
+```text
+/api/auth/
+/api/events/
+/api/participants/
+/api/registrations/
 ```
 
-5. Add these Railway environment variables:
+The frontend centralizes API access and token refresh so page components remain focused on product behavior and presentation.
 
-```bash
-DJANGO_SECRET_KEY=<strong-random-value>
-DJANGO_DEBUG=False
-DJANGO_ALLOWED_HOSTS=<your-railway-domain>
-DJANGO_CORS_ALLOWED_ORIGINS=https://<your-vercel-domain>
-DJANGO_CSRF_TRUSTED_ORIGINS=https://<your-vercel-domain>
-SQLITE_PATH=/data/db.sqlite3
-```
+## Support development
 
-If you plan to open Vercel deployment-specific URLs, they can change on each deploy. In that case prefer either:
+EventHub is maintained as an open development and portfolio project. Financial support can help cover hosting, testing, design work, and continued feature development.
 
-```bash
-DJANGO_CORS_ALLOWED_ORIGIN_REGEXES=^https://.*\.vercel\.app$
-DJANGO_CSRF_TRUSTED_ORIGINS=https://*.vercel.app
-```
+[![Sponsor on GitHub](https://img.shields.io/badge/Sponsor_on_GitHub-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white)](https://github.com/sponsors/sorooshaghaei)
 
-or use only the stable Vercel production alias in your browser.
+GitHub displays the repository-level **Sponsor** button from `.github/FUNDING.yml` after the maintainer's GitHub Sponsors profile is approved and activated.
 
-6. Deploy the service and copy the public Railway URL.
-7. Open a Railway shell and create the admin account:
+## Contributing
 
-```bash
-python backend/manage.py createsuperuser
-```
+Focused bug reports and pull requests are welcome. Before proposing a large feature, open an issue describing the user problem, expected behavior, and affected frontend or backend area.
 
-### 2. Create the Vercel frontend
+## Project background
 
-1. Import the same GitHub repository into Vercel.
-2. Set the project root to `frontend/`.
-3. Use:
+EventHub began as an integrated Web Programming 2026 project and was subsequently prepared as a public, deployable portfolio demonstration. The public demo emphasizes immediate product inspection, while the repository retains the complete React, Django, Express, database, and report workspaces.
 
-```bash
-Build command: npm run build
-Output directory: dist
-```
+---
 
-4. Add this Vercel environment variable:
+<div align="center">
 
-```bash
-VITE_API_BASE_URL=https://<your-railway-domain>/api
-```
+Maintained by [@sorooshaghaei](https://github.com/sorooshaghaei)
 
-5. Deploy and open the generated `*.vercel.app` URL.
+[Live demo](https://sorooshaghaei.github.io/web-programming-project/) · [Repository](https://github.com/sorooshaghaei/web-programming-project) · [Sponsor](https://github.com/sponsors/sorooshaghaei)
 
-### 4. Smoke-test the public site
-
-1. Open the Vercel URL and confirm the login page loads.
-2. Register a normal user and log in.
-3. Confirm events, participants, and registrations load without CORS errors.
-4. Log in with the Railway admin account and verify create, edit, and delete flows.
-5. Restart or redeploy Railway and confirm the data still exists.
-
-## Report Quick Start
-
-```bash
-cd report
-mkdir -p build
-xelatex -interaction=nonstopmode -output-directory=build report.tex
-xelatex -interaction=nonstopmode -output-directory=build report.tex
-cp build/report.pdf report.pdf
-```
+</div>
