@@ -1,10 +1,15 @@
 // Frontend developer: Mehdi AGHAEI
 import { PROFILE_META_STORAGE_KEY, SESSION_STORAGE_KEY, THEME_STORAGE_KEY } from '../constants/appConstants'
+import { createDemoSession } from '../data/demoData'
 
 const VISITOR_COUNT_STORAGE_KEY = 'eventhub_visitor_count'
 const VISITOR_SESSION_STORAGE_KEY = 'eventhub_visitor_session'
 
 export function readStoredSession() {
+  if (import.meta.env.VITE_DEMO_MODE === 'true') {
+    return createDemoSession()
+  }
+
   try {
     const rawValue = window.localStorage.getItem(SESSION_STORAGE_KEY)
     if (!rawValue) {
@@ -23,6 +28,10 @@ export function readStoredSession() {
 }
 
 export function writeStoredSession(session) {
+  if (import.meta.env.VITE_DEMO_MODE === 'true') {
+    return
+  }
+
   if (!session) {
     window.localStorage.removeItem(SESSION_STORAGE_KEY)
     return
