@@ -9,6 +9,7 @@ import SiteFrame from '../common/SiteFrame'
 import NavButton from './NavButton'
 
 const MOBILE_SIDEBAR_MEDIA_QUERY = '(max-width: 780px)'
+const IS_DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
 
 export default function AppShell({
   banner,
@@ -33,7 +34,7 @@ export default function AppShell({
     user,
     workspaceStatus,
   } = useWorkspace()
-  const accessLabel = user?.role === 'admin' ? 'Admin' : canEdit ? 'Editor' : 'Viewer'
+  const accessLabel = IS_DEMO_MODE ? 'Read-only demo' : user?.role === 'admin' ? 'Admin' : canEdit ? 'Editor' : 'Viewer'
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
     if (typeof window === 'undefined') {
       return true
@@ -105,16 +106,18 @@ export default function AppShell({
           onClick: () => handleSidebarNavigate(openParticipants),
         },
       ]}
-      footerNote="Plan and join events online."
-      headerLabel="EventHub Online"
+      footerNote={IS_DEMO_MODE ? 'Interactive portfolio demo with local sample data.' : 'Plan and join events online.'}
+      headerLabel={IS_DEMO_MODE ? 'EventHub Demo' : 'EventHub Online'}
       headerActions={
         <>
           <button className={`${buttonClassNames.secondary} site-header__action-button`} onClick={onRefresh} type="button">
-            {workspaceStatus === 'refreshing' ? 'Refreshing...' : 'Refresh'}
+            {workspaceStatus === 'refreshing' ? 'Refreshing...' : IS_DEMO_MODE ? 'Reset demo' : 'Refresh'}
           </button>
-          <button className={`${buttonClassNames.ghost} site-header__action-button`} onClick={onLogout} type="button">
-            Log out
-          </button>
+          {!IS_DEMO_MODE ? (
+            <button className={`${buttonClassNames.ghost} site-header__action-button`} onClick={onLogout} type="button">
+              Log out
+            </button>
+          ) : null}
         </>
       }
       meta={pageMeta.title}
@@ -157,7 +160,7 @@ export default function AppShell({
             </nav>
 
             <section className="sidebar-panel">
-              <p className="panel-label">Signed in as</p>
+              <p className="panel-label">{IS_DEMO_MODE ? 'Demo profile' : 'Signed in as'}</p>
               <div className="profile-card">
                 <p className="profile-name">{user?.full_name}</p>
                 <p className="profile-meta">
@@ -166,15 +169,16 @@ export default function AppShell({
                 </p>
               </div>
               <p className="micro-copy">
-                Admins can edit events, participants, and registrations. Viewers can browse the
-                workspace in read-only mode.
+                {IS_DEMO_MODE
+                  ? 'Explore the interface with realistic local sample data. Changes are intentionally disabled.'
+                  : 'Admins can edit events, participants, and registrations. Viewers can browse the workspace in read-only mode.'}
               </p>
             </section>
 
             <section className="sidebar-panel sidebar-panel--soft">
               <p className="panel-label">Workspace</p>
               <p className="sidebar-copy sidebar-copy--small">{formatLastUpdated(lastUpdated)}</p>
-              <p className="micro-copy">Use Refresh to load the latest updates.</p>
+              <p className="micro-copy">{IS_DEMO_MODE ? 'Use Reset demo to reload the sample dataset.' : 'Use Refresh to load the latest updates.'}</p>
             </section>
           </div>
         </aside>
@@ -182,8 +186,10 @@ export default function AppShell({
         <section className="workspace">
           <header className="workspace-header">
             <div>
-              <p className="eyebrow eyebrow--dark">Event management</p>
-              <p className="retro-status-line">Now loading fresh community happenings and sign-ups.</p>
+              <p className="eyebrow eyebrow--dark">{IS_DEMO_MODE ? 'Portfolio demonstration' : 'Event management'}</p>
+              <p className="retro-status-line">
+                {IS_DEMO_MODE ? 'Local sample data · no backend required.' : 'Now loading fresh community happenings and sign-ups.'}
+              </p>
               <h2>{pageMeta.title}</h2>
               <p className="workspace-copy">{pageMeta.subtitle}</p>
             </div>
